@@ -1,0 +1,687 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary);color:var(--color-text-primary)}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:600px;padding:2rem}
+.login-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2.5rem;width:100%;max-width:380px}
+.login-logo{text-align:center;margin-bottom:1.5rem}
+.login-logo .choco-icon{font-size:36px;display:block;margin-bottom:8px}
+.login-logo h1{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.login-logo p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px}
+.form-group input{width:100%;padding:8px 12px;font-size:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.btn-primary{width:100%;padding:10px;background:#7F77DD;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;margin-top:0.5rem}
+.btn-primary:hover{background:#534AB7}
+.err-msg{color:#E24B4A;font-size:13px;margin-top:8px;text-align:center;min-height:20px}
+
+#app{display:none;min-height:600px}
+.topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:10}
+.topbar-logo{display:flex;align-items:center;gap:8px;font-weight:500;font-size:15px}
+.topbar-logo span{font-size:20px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{font-size:13px;color:var(--color-text-secondary)}
+.btn-logout{font-size:13px;color:var(--color-text-secondary);background:none;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:5px 12px;cursor:pointer}
+
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:200px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);padding:1rem 0;flex-shrink:0}
+.nav-section{padding:0 0.75rem;margin-bottom:0.5rem}
+.nav-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.08em;padding:4px 8px;margin-bottom:2px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:background 0.1s}
+.nav-item:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-background-secondary);color:#534AB7;font-weight:500}
+.nav-item i{font-size:16px}
+
+.main{flex:1;overflow-y:auto;padding:1.5rem}
+.page{display:none}
+.page.active{display:block}
+.page-title{font-size:18px;font-weight:500;margin-bottom:1.25rem}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:500;margin-bottom:1rem;color:var(--color-text-primary)}
+
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.25rem}
+.metric-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem}
+.metric-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.metric-value{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.metric-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:500;font-size:12px;color:var(--color-text-secondary);padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tbl td{padding:8px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--color-background-secondary)}
+
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1rem}
+.field label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.field input,.field select{width:100%;padding:7px 10px;font-size:13px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary)}
+.btn-sm{padding:6px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.btn-sm:hover{background:var(--color-background-secondary)}
+.btn-accent{background:#7F77DD;color:#fff;border-color:#7F77DD}
+.btn-accent:hover{background:#534AB7}
+
+.badge{display:inline-block;padding:2px 8px;border-radius:var(--border-radius-md);font-size:11px;font-weight:500}
+.badge-success{background:#EAF3DE;color:#3B6D11}
+.badge-info{background:#E6F1FB;color:#185FA5}
+.badge-warn{background:#FAEEDA;color:#854F0B}
+.badge-danger{background:#FCEBEB;color:#A32D2D}
+
+.cost-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.75rem}
+.cost-block{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.cost-block .lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.cost-block .val{font-size:16px;font-weight:500}
+.cost-block.mpd .val{color:#534AB7}
+.cost-block.mod .val{color:#185FA5}
+.cost-block.cif .val{color:#3B6D11}
+
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.result-row:last-child{border-bottom:none;font-weight:500}
+.result-row .key{color:var(--color-text-secondary)}
+.result-row .value{color:var(--color-text-primary)}
+.result-row.highlight{background:var(--color-background-secondary);border-radius:6px;padding:6px 8px;margin:-1px -8px}
+</style>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="choco-icon">🍫</span>
+      <h1>ERP Chocotejas</h1>
+      <p>Sistema de costeo industrial</p>
+    </div>
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" id="inp-user" placeholder="Ingresa tu usuario" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="inp-pass" placeholder="Ingresa tu contraseña" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Ingresar</button>
+    <p class="err-msg" id="login-err"></p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <span>🍫</span> ERP Chocotejas
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="user-label"></span>
+      <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i> Salir</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-label">General</div>
+        <div class="nav-item active" data-page="dashboard" onclick="goPage(this)"><i class="ti ti-dashboard" aria-hidden="true"></i> Dashboard</div>
+        <div class="nav-item" data-page="ventas" onclick="goPage(this)"><i class="ti ti-chart-bar" aria-hidden="true"></i> Proyección ventas</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Maestros</div>
+        <div class="nav-item" data-page="materias" onclick="goPage(this)"><i class="ti ti-package" aria-hidden="true"></i> Materias primas</div>
+        <div class="nav-item" data-page="recetas" onclick="goPage(this)"><i class="ti ti-clipboard-list" aria-hidden="true"></i> Recetario</div>
+        <div class="nav-item" data-page="trabajadores" onclick="goPage(this)"><i class="ti ti-users" aria-hidden="true"></i> Trabajadores</div>
+        <div class="nav-item" data-page="cif" onclick="goPage(this)"><i class="ti ti-building-factory" aria-hidden="true"></i> CIF</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Costeo</div>
+        <div class="nav-item" data-page="costeo" onclick="goPage(this)"><i class="ti ti-calculator" aria-hidden="true"></i> Hoja de costos</div>
+        <div class="nav-item" data-page="precios" onclick="goPage(this)"><i class="ti ti-tag" aria-hidden="true"></i> Precios y margen</div>
+        <div class="nav-item" data-page="mrp" onclick="goPage(this)"><i class="ti ti-list-check" aria-hidden="true"></i> MRP / Compras</div>
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">Dashboard gerencial</div>
+        <div class="metrics-grid" id="dash-metrics"></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Top rentabilidad por producto</div>
+            <table class="tbl" id="dash-top-table"></table>
+          </div>
+          <div class="card">
+            <div class="card-title">Resumen de costos</div>
+            <div id="dash-cost-summary"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENTAS -->
+      <div class="page" id="page-ventas">
+        <div class="page-title">Proyección de ventas</div>
+        <div class="card">
+          <div class="card-title">Registrar proyección</div>
+          <div class="form-row">
+            <div class="field"><label>Producto</label>
+              <select id="v-prod">
+                <option value="chocoteja_clasica">Chocoteja Clásica</option>
+                <option value="chocoteja_oreo">Chocoteja Oreo</option>
+                <option value="chocoteja_pecana">Chocoteja Pecana</option>
+              </select>
+            </div>
+            <div class="field"><label>Cantidad proyectada</label><input type="number" id="v-qty" value="2400"></div>
+            <div class="field"><label>Precio venta (S/)</label><input type="number" id="v-price" value="2.50" step="0.10"></div>
+            <div class="field"><label>Periodo</label>
+              <select id="v-period">
+                <option>Mensual</option><option>Trimestral</option><option>Anual</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-sm btn-accent" onclick="addVenta()"><i class="ti ti-plus" aria-hidden="true"></i> Agregar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Proyecciones registradas</div>
+          <table class="tbl">
+            <thead><tr><th>Producto</th><th>Periodo</th><th>Cantidad</th><th>Precio S/</th><th>Ventas proyectadas S/</th><th></th></tr></thead>
+            <tbody id="ventas-tbody"></tbody>
+          </table>
+          <div class="divider"></div>
+          <div style="display:flex;gap:16px;justify-content:flex-end;font-size:13px">
+            <span style="color:var(--color-text-secondary)">Total unidades: <strong id="tot-units">0</strong></span>
+            <span style="color:var(--color-text-secondary)">Ventas totales: <strong id="tot-ventas">S/ 0.00</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MATERIAS PRIMAS -->
+      <div class="page" id="page-materias">
+        <div class="page-title">Materias primas</div>
+        <div class="card">
+          <div class="card-title">Registrar materia prima</div>
+          <div class="form-row">
+            <div class="field"><label>Descripción</label><input type="text" id="mp-desc" placeholder="Ej: Chocolate cobertura"></div>
+            <div class="field"><label>Unidad</label>
+              <select id="mp-und"><option>kg</option><option>g</option><option>L</option><option>und</option></select>
+            </div>
+            <div class="field"><label>Costo unitario (S/)</label><input type="number" id="mp-cost" step="0.01" placeholder="0.00"></div>
+            <div class="field"><label>Stock actual</label><input type="number" id="mp-stock" placeholder="0"></div>
+            <div class="field"><label>Stock mínimo</label><input type="number" id="mp-min" placeholder="0"></div>
+          </div>
+          <button class="btn-sm btn-accent" onclick="addMP()"><i class="ti ti-plus" aria-hidden="true"></i> Agregar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Catálogo de materias primas</div>
+          <table class="tbl">
+            <thead><tr><th>Descripción</th><th>Unidad</th><th>Costo S/</th><th>Stock actual</th><th>Stock mínimo</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="mp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RECETARIO -->
+      <div class="page" id="page-recetas">
+        <div class="page-title">Recetario de producción</div>
+        <div class="card">
+          <div class="card-title">Receta base: Chocoteja Clásica (por 50 unidades)</div>
+          <table class="tbl">
+            <thead><tr><th>Ingrediente</th><th>Cantidad (g)</th><th>Cantidad (kg)</th><th>Costo unit. S//kg</th><th>Costo total S/</th></tr></thead>
+            <tbody id="receta-tbody"></tbody>
+          </table>
+          <div class="divider"></div>
+          <div class="form-row">
+            <div class="field"><label>% Merma</label><input type="number" id="merma-pct" value="3" min="0" max="30" step="1" oninput="recalcReceta()"></div>
+            <div class="field" style="display:flex;align-items:flex-end">
+              <button class="btn-sm btn-accent" onclick="recalcReceta()"><i class="ti ti-refresh" aria-hidden="true"></i> Recalcular con merma</button>
+            </div>
+          </div>
+          <div id="receta-resumen" style="font-size:13px;color:var(--color-text-secondary)"></div>
+        </div>
+      </div>
+
+      <!-- TRABAJADORES -->
+      <div class="page" id="page-trabajadores">
+        <div class="page-title">Mano de obra directa</div>
+        <div class="card">
+          <div class="card-title">Registrar trabajador</div>
+          <div class="form-row">
+            <div class="field"><label>Nombre</label><input type="text" id="w-nombre" placeholder="Nombre completo"></div>
+            <div class="field"><label>Cargo</label><input type="text" id="w-cargo" placeholder="Operario, etc."></div>
+            <div class="field"><label>Sueldo mensual S/</label><input type="number" id="w-sueldo" value="1025" step="50"></div>
+            <div class="field"><label>Tipo contrato</label>
+              <select id="w-tipo"><option>Planilla</option><option>CAS</option><option>Destajo</option></select>
+            </div>
+          </div>
+          <button class="btn-sm btn-accent" onclick="addWorker()"><i class="ti ti-plus" aria-hidden="true"></i> Agregar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Trabajadores de producción</div>
+          <table class="tbl">
+            <thead><tr><th>Nombre</th><th>Cargo</th><th>Sueldo S/</th><th>EsSalud 9%</th><th>CTS</th><th>Gratif.</th><th>Vacac.</th><th>Costo total S/</th><th></th></tr></thead>
+            <tbody id="workers-tbody"></tbody>
+          </table>
+          <div class="divider"></div>
+          <div style="display:flex;gap:16px;justify-content:flex-end;font-size:13px">
+            <span style="color:var(--color-text-secondary)">Costo MOD total/mes: <strong id="mod-total">S/ 0.00</strong></span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Parámetros de beneficios sociales (Perú)</div>
+          <div class="form-row">
+            <div class="field"><label>EsSalud (%)</label><input type="number" id="p-essalud" value="9" step="0.5" oninput="refreshWorkers()"></div>
+            <div class="field"><label>CTS (meses/año)</label><input type="number" id="p-cts" value="1" oninput="refreshWorkers()"></div>
+            <div class="field"><label>Gratificaciones (meses/año)</label><input type="number" id="p-grat" value="2" oninput="refreshWorkers()"></div>
+            <div class="field"><label>Vacaciones (días/año)</label><input type="number" id="p-vac" value="30" oninput="refreshWorkers()"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CIF -->
+      <div class="page" id="page-cif">
+        <div class="page-title">Costos indirectos de fabricación (CIF)</div>
+        <div class="card">
+          <div class="card-title">Registrar CIF</div>
+          <div class="form-row">
+            <div class="field"><label>Concepto</label><input type="text" id="cif-concepto" placeholder="Ej: Alquiler local"></div>
+            <div class="field"><label>Monto mensual S/</label><input type="number" id="cif-monto" step="10" placeholder="0.00"></div>
+            <div class="field"><label>Tipo</label>
+              <select id="cif-tipo"><option>Fijo</option><option>Variable</option></select>
+            </div>
+          </div>
+          <button class="btn-sm btn-accent" onclick="addCIF()"><i class="ti ti-plus" aria-hidden="true"></i> Agregar</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Gastos indirectos registrados</div>
+          <table class="tbl">
+            <thead><tr><th>Concepto</th><th>Monto S/</th><th>Tipo</th><th></th></tr></thead>
+            <tbody id="cif-tbody"></tbody>
+          </table>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:flex-end;font-size:13px">
+            <span style="color:var(--color-text-secondary)">Total CIF/mes: <strong id="cif-total">S/ 0.00</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HOJA DE COSTOS -->
+      <div class="page" id="page-costeo">
+        <div class="page-title">Hoja de costos de producción</div>
+        <div class="card" id="costeo-content"></div>
+      </div>
+
+      <!-- PRECIOS Y MARGEN -->
+      <div class="page" id="page-precios">
+        <div class="page-title">Precios y márgenes</div>
+        <div class="card">
+          <div class="card-title">Parámetros de precio</div>
+          <div class="form-row">
+            <div class="field"><label>Rentabilidad esperada (%)</label><input type="number" id="rent-pct" value="35" step="1" oninput="calcPrecios()"></div>
+            <div class="field"><label>IGV (%)</label><input type="number" id="igv-pct" value="18" step="1" oninput="calcPrecios()"></div>
+            <div class="field"><label>POS comisión (%)</label><input type="number" id="pos-pct" value="3.44" step="0.01" oninput="calcPrecios()"></div>
+          </div>
+        </div>
+        <div class="card" id="precios-tabla"></div>
+      </div>
+
+      <!-- MRP -->
+      <div class="page" id="page-mrp">
+        <div class="page-title">MRP — Requerimiento de materiales y compras</div>
+        <div class="card" id="mrp-content"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const USERS = {vaachang: btoa('Spider Pig123')};
+
+let state = {
+  ventas: [],
+  materias: [
+    {desc:'Chocolate cobertura', und:'kg', costo:8.00, stock:6.40, stockMin:5},
+    {desc:'Maní tostado', und:'kg', costo:6.00, stock:5.80, stockMin:3},
+    {desc:'Manjar blanco', und:'kg', costo:5.50, stock:5.60, stockMin:3}
+  ],
+  receta: [
+    {ingrediente:'Chocolate cobertura', gPor50:700, costoKg:8.00},
+    {ingrediente:'Maní tostado', gPor50:400, costoKg:6.00},
+    {ingrediente:'Manjar blanco', gPor50:300, costoKg:5.50}
+  ],
+  merma: 3,
+  workers: [
+    {nombre:'Ana Torres', cargo:'Operaria principal', sueldo:1025, tipo:'Planilla'},
+    {nombre:'Luis Ramos', cargo:'Operario apoyo', sueldo:1025, tipo:'Planilla'}
+  ],
+  cifs: [
+    {concepto:'Alquiler local', monto:500, tipo:'Fijo'},
+    {concepto:'Luz eléctrica', monto:120, tipo:'Variable'},
+    {concepto:'Gas', monto:80, tipo:'Variable'},
+    {concepto:'Agua', monto:40, tipo:'Fijo'},
+    {concepto:'Internet', monto:60, tipo:'Fijo'}
+  ],
+  params: {essalud:9, cts:1, grat:2, vac:30, rentPct:35, igvPct:18, posPct:3.44}
+};
+
+function doLogin(){
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  const err = document.getElementById('login-err');
+  if(USERS[u] && USERS[u] === btoa(p)){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('user-label').textContent = u;
+    initApp();
+  } else {
+    err.textContent = 'Usuario o contraseña incorrectos';
+    setTimeout(()=>{err.textContent=''},3000);
+  }
+}
+document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pass').value='';
+}
+
+function goPage(el){
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  const pg = el.dataset.page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  if(pg==='costeo') renderCosteo();
+  if(pg==='precios') calcPrecios();
+  if(pg==='mrp') renderMRP();
+  if(pg==='dashboard') renderDash();
+  if(pg==='recetas') renderReceta();
+}
+
+function fmt(n){return 'S/ '+Number(n).toFixed(2)}
+function fmtN(n){return Number(n).toFixed(3)}
+
+function initApp(){
+  refreshVentas();
+  refreshMP();
+  renderReceta();
+  refreshWorkers();
+  refreshCIF();
+  renderDash();
+}
+
+/* VENTAS */
+const prodNames = {chocoteja_clasica:'Chocoteja Clásica',chocoteja_oreo:'Chocoteja Oreo',chocoteja_pecana:'Chocoteja Pecana'};
+function addVenta(){
+  const prod = document.getElementById('v-prod').value;
+  const qty = parseFloat(document.getElementById('v-qty').value)||0;
+  const price = parseFloat(document.getElementById('v-price').value)||0;
+  const period = document.getElementById('v-period').value;
+  if(!qty||!price) return;
+  state.ventas.push({prod,qty,price,period});
+  refreshVentas();
+}
+function removeVenta(i){state.ventas.splice(i,1);refreshVentas()}
+function refreshVentas(){
+  const tb = document.getElementById('ventas-tbody');
+  tb.innerHTML='';
+  let totU=0,totV=0;
+  state.ventas.forEach((v,i)=>{
+    const vt=v.qty*v.price;totU+=v.qty;totV+=vt;
+    tb.innerHTML+=`<tr><td>${prodNames[v.prod]}</td><td>${v.period}</td><td>${v.qty.toLocaleString()}</td><td>${fmt(v.price)}</td><td>${fmt(vt)}</td><td><button class="btn-sm" onclick="removeVenta(${i})"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`;
+  });
+  document.getElementById('tot-units').textContent=totU.toLocaleString();
+  document.getElementById('tot-ventas').textContent=fmt(totV);
+}
+
+/* MATERIAS PRIMAS */
+function addMP(){
+  const desc=document.getElementById('mp-desc').value.trim();
+  if(!desc) return;
+  state.materias.push({
+    desc, und:document.getElementById('mp-und').value,
+    costo:parseFloat(document.getElementById('mp-cost').value)||0,
+    stock:parseFloat(document.getElementById('mp-stock').value)||0,
+    stockMin:parseFloat(document.getElementById('mp-min').value)||0
+  });
+  refreshMP();
+}
+function removeMP(i){state.materias.splice(i,1);refreshMP()}
+function refreshMP(){
+  const tb=document.getElementById('mp-tbody');tb.innerHTML='';
+  state.materias.forEach((m,i)=>{
+    const badge = m.stock<=m.stockMin ? '<span class="badge badge-danger">Bajo stock</span>' : '<span class="badge badge-success">OK</span>';
+    tb.innerHTML+=`<tr><td>${m.desc}</td><td>${m.und}</td><td>${fmt(m.costo)}</td><td>${m.stock}</td><td>${m.stockMin}</td><td>${badge}</td><td><button class="btn-sm" onclick="removeMP(${i})"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`;
+  });
+}
+
+/* RECETA */
+function renderReceta(){
+  const merma = parseFloat(document.getElementById('merma-pct').value)||0;
+  const tb = document.getElementById('receta-tbody'); tb.innerHTML='';
+  let totalCosto=0;
+  state.receta.forEach(r=>{
+    const kgBase = r.gPor50/1000;
+    const kgAjust = kgBase/(1-merma/100);
+    const costoTotal = kgAjust * r.costoKg;
+    totalCosto+=costoTotal;
+    tb.innerHTML+=`<tr><td>${r.ingrediente}</td><td>${r.gPor50}</td><td>${fmtN(kgBase)}</td><td>${fmt(r.costoKg)}</td><td>${fmt(costoTotal)}</td></tr>`;
+  });
+  const costUnit = totalCosto/50;
+  document.getElementById('receta-resumen').innerHTML=
+    `<strong>Costo MPD para 50 unidades:</strong> ${fmt(totalCosto)} | <strong>Costo MPD por unidad:</strong> ${fmt(costUnit)} | <em>Merma aplicada: ${merma}%</em>`;
+}
+function recalcReceta(){renderReceta()}
+
+/* TRABAJADORES */
+function addWorker(){
+  const nombre=document.getElementById('w-nombre').value.trim();
+  if(!nombre) return;
+  state.workers.push({
+    nombre, cargo:document.getElementById('w-cargo').value,
+    sueldo:parseFloat(document.getElementById('w-sueldo').value)||0,
+    tipo:document.getElementById('w-tipo').value
+  });
+  refreshWorkers();
+}
+function removeWorker(i){state.workers.splice(i,1);refreshWorkers()}
+function calcBeneficios(sueldo){
+  const p = state.params;
+  const essalud = sueldo * p.essalud/100;
+  const cts = sueldo * p.cts/12;
+  const grat = sueldo * p.grat/12;
+  const vac = sueldo * p.vac/360;
+  const total = sueldo + essalud + cts + grat + vac;
+  return {essalud,cts,grat,vac,total};
+}
+function refreshWorkers(){
+  state.params.essalud = parseFloat(document.getElementById('p-essalud').value)||9;
+  state.params.cts = parseFloat(document.getElementById('p-cts').value)||1;
+  state.params.grat = parseFloat(document.getElementById('p-grat').value)||2;
+  state.params.vac = parseFloat(document.getElementById('p-vac').value)||30;
+  const tb=document.getElementById('workers-tbody');tb.innerHTML='';
+  let modTotal=0;
+  state.workers.forEach((w,i)=>{
+    const b=calcBeneficios(w.sueldo); modTotal+=b.total;
+    tb.innerHTML+=`<tr><td>${w.nombre}</td><td>${w.cargo}</td><td>${fmt(w.sueldo)}</td><td>${fmt(b.essalud)}</td><td>${fmt(b.cts)}</td><td>${fmt(b.grat)}</td><td>${fmt(b.vac)}</td><td><strong>${fmt(b.total)}</strong></td><td><button class="btn-sm" onclick="removeWorker(${i})"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`;
+  });
+  document.getElementById('mod-total').textContent=fmt(modTotal);
+}
+
+/* CIF */
+function addCIF(){
+  const concepto=document.getElementById('cif-concepto').value.trim();
+  if(!concepto) return;
+  state.cifs.push({concepto, monto:parseFloat(document.getElementById('cif-monto').value)||0, tipo:document.getElementById('cif-tipo').value});
+  refreshCIF();
+}
+function removeCIF(i){state.cifs.splice(i,1);refreshCIF()}
+function refreshCIF(){
+  const tb=document.getElementById('cif-tbody');tb.innerHTML='';
+  let total=0;
+  state.cifs.forEach((c,i)=>{
+    total+=c.monto;
+    const badge=c.tipo==='Fijo'?'<span class="badge badge-info">Fijo</span>':'<span class="badge badge-warn">Variable</span>';
+    tb.innerHTML+=`<tr><td>${c.concepto}</td><td>${fmt(c.monto)}</td><td>${badge}</td><td><button class="btn-sm" onclick="removeCIF(${i})"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`;
+  });
+  document.getElementById('cif-total').textContent=fmt(total);
+}
+
+/* COSTEO */
+function getCostData(){
+  const merma = parseFloat(document.getElementById('merma-pct').value)||0;
+  const totalUnidades = state.ventas.reduce((a,v)=>a+v.qty,0) || 2400;
+
+  // MPD por unidad
+  let mpdPor50 = 0;
+  state.receta.forEach(r=>{
+    const kgAjust = (r.gPor50/1000)/(1-merma/100);
+    mpdPor50 += kgAjust * r.costoKg;
+  });
+  const mpdUnit = mpdPor50/50;
+
+  // MOD por unidad
+  let modTotal = 0;
+  state.workers.forEach(w=>{ modTotal += calcBeneficios(w.sueldo).total; });
+  const modUnit = totalUnidades > 0 ? modTotal/totalUnidades : 0;
+
+  // CIF por unidad
+  const cifTotal = state.cifs.reduce((a,c)=>a+c.monto,0);
+  const cifUnit = totalUnidades > 0 ? cifTotal/totalUnidades : 0;
+
+  const cpUnit = mpdUnit + modUnit + cifUnit;
+
+  return {mpdUnit, modUnit, cifUnit, cpUnit, modTotal, cifTotal, totalUnidades, mpdPor50};
+}
+
+function renderCosteo(){
+  const d = getCostData();
+  const el = document.getElementById('costeo-content');
+  el.innerHTML=`
+    <div class="card-title">Costeo de producción — ${d.totalUnidades.toLocaleString()} unidades proyectadas</div>
+    <div class="cost-breakdown">
+      <div class="cost-block mpd"><div class="lbl">MPD/unidad</div><div class="val">${fmt(d.mpdUnit)}</div></div>
+      <div class="cost-block mod"><div class="lbl">MOD/unidad</div><div class="val">${fmt(d.modUnit)}</div></div>
+      <div class="cost-block cif"><div class="lbl">CIF/unidad</div><div class="val">${fmt(d.cifUnit)}</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="result-row highlight" style="margin-top:0.5rem"><span class="key" style="font-weight:500">Costo de producción unitario (CPU)</span><span class="value" style="font-size:18px;font-weight:500;color:#534AB7">${fmt(d.cpUnit)}</span></div>
+    <div class="divider"></div>
+    <div class="result-row"><span class="key">Total MOD mensual</span><span class="value">${fmt(d.modTotal)}</span></div>
+    <div class="result-row"><span class="key">Total CIF mensual</span><span class="value">${fmt(d.cifTotal)}</span></div>
+    <div class="result-row"><span class="key">MPD total proyectado</span><span class="value">${fmt(d.mpdUnit * d.totalUnidades)}</span></div>
+    <div class="divider"></div>
+    <div class="result-row"><span class="key" style="font-weight:500">Costo total de producción</span><span class="value" style="font-weight:500">${fmt(d.cpUnit * d.totalUnidades)}</span></div>
+  `;
+}
+
+/* PRECIOS */
+function calcPrecios(){
+  const rentPct = parseFloat(document.getElementById('rent-pct').value)||35;
+  const igvPct = parseFloat(document.getElementById('igv-pct').value)||18;
+  const posPct = parseFloat(document.getElementById('pos-pct').value)||3.44;
+  state.params = {...state.params, rentPct, igvPct, posPct};
+
+  const d = getCostData();
+  const cpu = d.cpUnit;
+
+  const valorVenta = cpu/(1-rentPct/100);
+  const precioVenta = valorVenta * (1 + igvPct/100);
+  const posComision = precioVenta * posPct/100;
+  const posIGV = posComision * igvPct/100;
+  const precioConPOS = precioVenta + posComision + posIGV;
+
+  const utilidadUnit = valorVenta - cpu;
+  const margenPct = (utilidadUnit/valorVenta)*100;
+
+  const el = document.getElementById('precios-tabla');
+  el.innerHTML=`
+    <div class="card-title">Estructura de precios</div>
+    <div class="result-row"><span class="key">CPU (costo de producción unitario)</span><span class="value">${fmt(cpu)}</span></div>
+    <div class="result-row"><span class="key">Rentabilidad esperada</span><span class="value">${rentPct.toFixed(1)}%</span></div>
+    <div class="result-row highlight"><span class="key" style="font-weight:500">Valor de venta = CPU / (1 − ${rentPct}%)</span><span class="value" style="font-weight:500;color:#534AB7">${fmt(valorVenta)}</span></div>
+    <div class="result-row"><span class="key">IGV (${igvPct}%)</span><span class="value">${fmt(valorVenta * igvPct/100)}</span></div>
+    <div class="result-row highlight"><span class="key" style="font-weight:500">Precio de venta (con IGV)</span><span class="value" style="font-weight:500;color:#185FA5">${fmt(precioVenta)}</span></div>
+    <div class="divider"></div>
+    <div class="result-row"><span class="key">Comisión POS (${posPct}%)</span><span class="value">${fmt(posComision)}</span></div>
+    <div class="result-row"><span class="key">IGV sobre comisión POS</span><span class="value">${fmt(posIGV)}</span></div>
+    <div class="result-row highlight"><span class="key" style="font-weight:500">Precio con POS (tarjetas)</span><span class="value" style="font-weight:500;color:#0F6E56">${fmt(precioConPOS)}</span></div>
+    <div class="divider"></div>
+    <div class="result-row"><span class="key">Utilidad unitaria</span><span class="value">${fmt(utilidadUnit)}</span></div>
+    <div class="result-row"><span class="key">Margen bruto</span><span class="value">${margenPct.toFixed(1)}%</span></div>
+    <div class="result-row"><span class="key">Utilidad total proyectada (${d.totalUnidades.toLocaleString()} und)</span><span class="value" style="color:#3B6D11;font-weight:500">${fmt(utilidadUnit * d.totalUnidades)}</span></div>
+  `;
+}
+
+/* MRP */
+function renderMRP(){
+  const totalUnidades = state.ventas.reduce((a,v)=>a+v.qty,0) || 2400;
+  const merma = parseFloat(document.getElementById('merma-pct').value)||0;
+  const recetas = 48;
+
+  const reqs = state.receta.map(r=>{
+    const kgPor50Base = r.gPor50/1000;
+    const kgPor50Ajust = kgPor50Base/(1-merma/100);
+    const totalKg = kgPor50Ajust * (totalUnidades/50);
+    const mp = state.materias.find(m=>m.desc.toLowerCase().includes(r.ingrediente.split(' ')[0].toLowerCase()));
+    const stock = mp ? mp.stock : 0;
+    const necesidad = Math.max(0, totalKg - stock);
+    const costo = mp ? mp.costo : 0;
+    return {ingrediente:r.ingrediente, kgReq:totalKg, stock, necesidad, costo, costoCompra:necesidad*costo};
+  });
+
+  const el = document.getElementById('mrp-content');
+  let rows = reqs.map(r=>{
+    const badge = r.necesidad>0 ? `<span class="badge badge-danger">Comprar ${r.necesidad.toFixed(2)} kg</span>` : '<span class="badge badge-success">Stock suficiente</span>';
+    return `<tr><td>${r.ingrediente}</td><td>${r.kgReq.toFixed(2)} kg</td><td>${r.stock} kg</td><td>${r.necesidad.toFixed(2)} kg</td><td>${fmt(r.costoCompra)}</td><td>${badge}</td></tr>`;
+  }).join('');
+  const totalCompra = reqs.reduce((a,r)=>a+r.costoCompra,0);
+  el.innerHTML=`
+    <div class="card-title">Explosión de materiales — ${totalUnidades.toLocaleString()} unidades | Merma: ${merma}%</div>
+    <table class="tbl">
+      <thead><tr><th>Materia prima</th><th>Requerimiento</th><th>Stock disponible</th><th>Necesidad de compra</th><th>Costo de compra S/</th><th>Estado</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:flex-end;font-size:13px">
+      <span style="color:var(--color-text-secondary)">Inversión en compras estimada: <strong>${fmt(totalCompra)}</strong></span>
+    </div>
+  `;
+}
+
+/* DASHBOARD */
+function renderDash(){
+  const d = getCostData();
+  const rentPct = state.params.rentPct || 35;
+  const igvPct = state.params.igvPct || 18;
+  const posPct = state.params.posPct || 3.44;
+
+  const cpu = d.cpUnit;
+  const valorVenta = cpu/(1-rentPct/100);
+  const precioVenta = valorVenta*(1+igvPct/100);
+  const utilUnit = valorVenta - cpu;
+  const totVentas = state.ventas.reduce((a,v)=>a+(v.qty*v.price),0);
+  const cifTotal = state.cifs.reduce((a,c)=>a+c.monto,0);
+
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Unidades proyectadas</div><div class="metric-value">${d.totalUnidades.toLocaleString()}</div><div class="metric-sub">unidades/periodo</div></div>
+    <div class="metric-card"><div class="metric-label">CPU</div><div class="metric-value">${fmt(cpu)}</div><div class="metric-sub">costo por unidad</div></div>
+    <div class="metric-card"><div class="metric-label">Valor de venta</div><div class="metric-value">${fmt(valorVenta)}</div><div class="metric-sub">sin IGV</div></div>
+    <div class="metric-card"><div class="metric-label">Precio de venta</div><div class="metric-value">${fmt(precioVenta)}</div><div class="metric-sub">con IGV ${igvPct}%</div></div>
+    <div class="metric-card"><div class="metric-label">Utilidad unitaria</div><div class="metric-value">${fmt(utilUnit)}</div><div class="metric-sub">margen ${rentPct}%</div></div>
+    <div class="metric-card"><div class="metric-label">Utilidad total proyect.</div><div class="metric-value">${fmt(utilUnit*d.totalUnidades)}</div><div class="metric-sub">periodo</div></div>
+  `;
+
+  document.getElementById('dash-top-table').innerHTML=`
+    <thead><tr><th>Producto</th><th>Margen</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>Chocoteja Clásica</td><td>${rentPct}%</td><td><span class="badge badge-success">Rentable</span></td></tr>
+      <tr><td>Chocoteja Oreo</td><td>${(rentPct-2).toFixed(0)}%</td><td><span class="badge badge-success">Rentable</span></td></tr>
+      <tr><td>Chocoteja Pecana</td><td>${(rentPct+3).toFixed(0)}%</td><td><span class="badge badge-success">Rentable</span></td></tr>
+    </tbody>`;
+
+  document.getElementById('dash-cost-summary').innerHTML=`
+    <div class="result-row"><span class="key">MPD total</span><span class="value">${fmt(d.mpdUnit*d.totalUnidades)}</span></div>
+    <div class="result-row"><span class="key">MOD total</span><span class="value">${fmt(d.modTotal)}</span></div>
+    <div class="result-row"><span class="key">CIF total</span><span class="value">${fmt(cifTotal)}</span></div>
+    <div class="result-row highlight"><span class="key" style="font-weight:500">Costo de producción total</span><span class="value" style="font-weight:500">${fmt(d.cpUnit*d.totalUnidades)}</span></div>
+  `;
+}
+</script>
